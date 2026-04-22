@@ -287,8 +287,7 @@ sL.forEach((l,i)=>{
 // Ajusta altura dos gráficos ao espaço real disponível
 function layoutCharts() {
   const topH = document.querySelector('.top').offsetHeight;
-  const barH = document.querySelector('.bar').offsetHeight;
-  document.querySelector('.charts').style.height = (window.innerHeight - topH - barH) + 'px';
+  document.querySelector('.charts').style.height = (window.innerHeight - topH) + 'px';
 }
 layoutCharts();
 window.addEventListener('resize', () => { layoutCharts(); });
