@@ -20,7 +20,6 @@ html, body {
 
 /* ════ TOPO — altura FIXA 124px ════ */
 .top {
-  height: 124px;
   flex-shrink: 0;
   display: flex;
   background: #fff;
@@ -28,7 +27,6 @@ html, body {
   padding: 10px 16px;
   gap: 12px;
   align-items: stretch;
-  overflow: hidden;
 }
 
 .filters {
@@ -114,7 +112,7 @@ html, body {
 
 /* ════ GRÁFICOS — ocupa o restante EXATO ════ */
 .charts {
-  height: calc(100vh - 124px - 2px - 44px);
+  height: 100px; /* valor inicial; JS recalcula em layoutCharts() */
   display: flex; gap: 12px; padding: 12px 14px;
   background: #f0f4fa; overflow: hidden;
 }
@@ -327,6 +325,15 @@ sL.forEach((l,i)=>{
   const p=Math.round(sV[i]/tot*100);
   lg.innerHTML+=`<div class="li"><div class="ld" style="background:${sC[i]}"></div><span><b>${l}</b> — ${sV[i]} <span class="lp">(${p}%)</span></span></div>`;
 });
+
+// Ajusta altura dos gráficos ao espaço real disponível
+function layoutCharts() {
+  const topH = document.querySelector('.top').offsetHeight;
+  const barH = document.querySelector('.bar').offsetHeight;
+  document.querySelector('.charts').style.height = (window.innerHeight - topH - barH) + 'px';
+}
+layoutCharts();
+window.addEventListener('resize', () => { layoutCharts(); });
 
 // Adia inicialização dos charts para depois do layout estar computado
 requestAnimationFrame(() => requestAnimationFrame(() => {
