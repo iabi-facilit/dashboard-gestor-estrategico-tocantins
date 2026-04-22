@@ -114,7 +114,7 @@ def kpis(
         cur.execute(
             f"""
             SELECT
-                COUNT(*)                      AS total_planos,
+                COUNT(DISTINCT uuid_)         AS total_planos,
                 COUNT(DISTINCT agencyid)      AS total_orgaos,
                 COUNT(DISTINCT responsavelid) AS total_participantes
             FROM api_acaoprioritaria {where}
@@ -143,7 +143,7 @@ def por_status(
         cur = conn.cursor()
         cur.execute(
             f"""
-            SELECT status, status_cor, COUNT(*) AS total
+            SELECT status, status_cor, COUNT(DISTINCT uuid_) AS total
             FROM api_acaoprioritaria {where}
             GROUP BY status, status_cor
             ORDER BY total DESC
@@ -168,7 +168,7 @@ def por_orgao(
         cur = conn.cursor()
         cur.execute(
             f"""
-            SELECT agencyacronym, COUNT(*) AS total
+            SELECT agencyacronym, COUNT(DISTINCT uuid_) AS total
             FROM api_acaoprioritaria {where}
             GROUP BY agencyacronym
             ORDER BY total DESC
