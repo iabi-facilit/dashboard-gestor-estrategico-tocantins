@@ -2,5 +2,7 @@ services:
   app:
     build: .
     ports:
-      - "8196:80"
+      - "8196:8196"
+    environment:
+      - DB_URL=${DB_URL:-postgresql://bi:F%40c1l1t@172.17.4.4:5432/tocantins}
     restart: unless-stopped
