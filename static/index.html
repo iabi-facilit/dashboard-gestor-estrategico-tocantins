@@ -148,12 +148,10 @@ html, body {
   position: relative;
   overflow: hidden;
 }
-/* canvas posicionado absolutamente para preencher o wrapper */
+/* canvas preenche o wrapper via inset — sem !important que bloqueia Chart.js */
 .chart-wrap canvas {
   position: absolute;
-  top: 0; left: 0;
-  width: 100% !important;
-  height: 100% !important;
+  inset: 0;
 }
 
 /* ── Donut: área interna ── */
@@ -173,8 +171,8 @@ html, body {
   position: relative; overflow: hidden;
 }
 .donut-wrap canvas {
-  position: absolute; top: 0; left: 0;
-  width: 100% !important; height: 100% !important;
+  position: absolute;
+  inset: 0;
 }
 .donut-badge {
   flex-shrink: 0; width: 100px;
@@ -322,48 +320,54 @@ const sL=Object.keys(sd), sV=Object.values(sd), sC=sL.map(k=>SC[k]);
 const tot=sV.reduce((a,b)=>a+b,0);
 document.getElementById('kv-tot').textContent=tot;
 
-new Chart(document.getElementById('cBar'),{
-  type:'bar',
-  data:{labels:orgaos.labels,datasets:[{data:orgaos.values,backgroundColor:'#044CB8bb',borderColor:'#044CB8',borderWidth:1,borderRadius:3}]},
-  options:{
-    indexAxis:'y', responsive:true, maintainAspectRatio:false,
-    layout:{padding:0},
-    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.x} planos`}}},
-    scales:{
-      x:{grid:{color:'#e8f0fb'},ticks:{color:'#044CB8',font:{size:10}}},
-      y:{grid:{display:false},ticks:{color:'#044CB8',font:{size:10,weight:'bold'}}}
-    }
-  }
-});
-
-new Chart(document.getElementById('cDonut'),{
-  type:'doughnut',
-  data:{labels:sL,datasets:[{data:sV,backgroundColor:sC,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
-  options:{
-    responsive:true, maintainAspectRatio:false, cutout:'60%',
-    plugins:{
-      legend:{display:false},
-      tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} (${(c.parsed/tot*100).toFixed(1)}%)`}}
-    }
-  },
-  plugins:[{id:'ct',afterDraw(ch){
-    const {ctx,chartArea:{top,bottom,left,right}}=ch;
-    const cx=(left+right)/2, cy=(top+bottom)/2;
-    ctx.save();
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.fillStyle='#044CB8'; ctx.font='bold 26px Segoe UI,Arial';
-    ctx.fillText(tot,cx,cy-8);
-    ctx.font='10px Segoe UI,Arial'; ctx.fillStyle='#999';
-    ctx.fillText('planos',cx,cy+12);
-    ctx.restore();
-  }}]
-});
-
+// Legenda (sem precisar de layout)
 const lg=document.getElementById('legend');
 sL.forEach((l,i)=>{
   const p=Math.round(sV[i]/tot*100);
   lg.innerHTML+=`<div class="li"><div class="ld" style="background:${sC[i]}"></div><span><b>${l}</b> — ${sV[i]} <span class="lp">(${p}%)</span></span></div>`;
 });
+
+// Adia inicialização dos charts para depois do layout estar computado
+requestAnimationFrame(() => requestAnimationFrame(() => {
+
+  new Chart(document.getElementById('cBar'),{
+    type:'bar',
+    data:{labels:orgaos.labels,datasets:[{data:orgaos.values,backgroundColor:'#044CB8bb',borderColor:'#044CB8',borderWidth:1,borderRadius:3}]},
+    options:{
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      layout:{padding:0},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.x} planos`}}},
+      scales:{
+        x:{grid:{color:'#e8f0fb'},ticks:{color:'#044CB8',font:{size:10}}},
+        y:{grid:{display:false},ticks:{color:'#044CB8',font:{size:10,weight:'bold'}}}
+      }
+    }
+  });
+
+  new Chart(document.getElementById('cDonut'),{
+    type:'doughnut',
+    data:{labels:sL,datasets:[{data:sV,backgroundColor:sC,borderWidth:2,borderColor:'#fff',hoverOffset:6}]},
+    options:{
+      responsive:true, maintainAspectRatio:false, cutout:'60%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.parsed} (${(c.parsed/tot*100).toFixed(1)}%)`}}
+      }
+    },
+    plugins:[{id:'ct',afterDraw(ch){
+      const {ctx,chartArea:{top,bottom,left,right}}=ch;
+      const cx=(left+right)/2, cy=(top+bottom)/2;
+      ctx.save();
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='#044CB8'; ctx.font='bold 26px Segoe UI,Arial';
+      ctx.fillText(tot,cx,cy-8);
+      ctx.font='10px Segoe UI,Arial'; ctx.fillStyle='#999';
+      ctx.fillText('planos',cx,cy+12);
+      ctx.restore();
+    }}]
+  });
+
+}));
 
 function syncSel(id,v){document.getElementById(id).value=v;}
 function applyFilters(){}
