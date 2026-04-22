@@ -2,11 +2,9 @@ import os
 from contextlib import contextmanager
 from fastapi import FastAPI, Query
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 import psycopg2
-import psycopg2.extras
 
-DB_URL = os.getenv("DB_URL", "postgresql://bi:F%40c1l1t@172.17.4.4:5432/tocantins")
+DB_URL = os.getenv("DB_URL", "postgresql://bi:F%40c1l1t@172.19.4.156:15432/tocantins")
 SCHEMA = "teletrabalho"
 
 app = FastAPI()
@@ -29,7 +27,7 @@ def build_where(
     data_inicio: str | None,
     data_termino: str | None,
 ):
-    clauses = []
+    clauses = ["template = 'false'"]
     params = []
 
     if status:
@@ -45,9 +43,8 @@ def build_where(
         clauses.append("responsavel = %s")
         params.append(participante)
     if data_inicio:
-        # coluna armazena no formato DD/MM/YYYY HH:MM:SS
         clauses.append(
-            "TO_DATE(SPLIT_PART(dataterminoprevisto, ' ', 1), 'DD/MM/YYYY') >= TO_DATE(%s, 'YYYY-MM-DD')"
+            "TO_DATE(SPLIT_PART(datainicioprevisto, ' ', 1), 'DD/MM/YYYY') >= TO_DATE(%s, 'YYYY-MM-DD')"
         )
         params.append(data_inicio)
     if data_termino:
@@ -56,7 +53,7 @@ def build_where(
         )
         params.append(data_termino)
 
-    where = ("WHERE " + " AND ".join(clauses)) if clauses else ""
+    where = "WHERE " + " AND ".join(clauses)
     return where, params
 
 
@@ -69,16 +66,29 @@ def health():
 def filtros():
     with get_db() as conn:
         cur = conn.cursor()
-        cur.execute("SELECT DISTINCT status FROM api_planoperativo WHERE status IS NOT NULL ORDER BY status")
+        cur.execute(
+            "SELECT DISTINCT status FROM api_acaoprioritaria "
+            "WHERE template='false' AND status IS NOT NULL ORDER BY status"
+        )
         status = [r[0] for r in cur.fetchall()]
 
-        cur.execute("SELECT DISTINCT statusinformado FROM api_planoperativo WHERE statusinformado IS NOT NULL ORDER BY statusinformado")
+        cur.execute(
+            "SELECT DISTINCT statusinformado FROM api_acaoprioritaria "
+            "WHERE template='false' AND statusinformado IS NOT NULL AND statusinformado != '' "
+            "ORDER BY statusinformado"
+        )
         situacoes = [r[0] for r in cur.fetchall()]
 
-        cur.execute("SELECT DISTINCT agencyacronym FROM api_planoperativo WHERE agencyacronym IS NOT NULL ORDER BY agencyacronym")
+        cur.execute(
+            "SELECT DISTINCT agencyacronym FROM api_acaoprioritaria "
+            "WHERE template='false' AND agencyacronym IS NOT NULL ORDER BY agencyacronym"
+        )
         orgaos = [r[0] for r in cur.fetchall()]
 
-        cur.execute("SELECT DISTINCT responsavel FROM api_planoperativo WHERE responsavel IS NOT NULL ORDER BY responsavel")
+        cur.execute(
+            "SELECT DISTINCT responsavel FROM api_acaoprioritaria "
+            "WHERE template='false' AND responsavel IS NOT NULL ORDER BY responsavel"
+        )
         participantes = [r[0] for r in cur.fetchall()]
 
     return {
@@ -104,10 +114,10 @@ def kpis(
         cur.execute(
             f"""
             SELECT
-                COUNT(*)                    AS total_planos,
-                COUNT(DISTINCT agencyid)    AS total_orgaos,
+                COUNT(*)                      AS total_planos,
+                COUNT(DISTINCT agencyid)      AS total_orgaos,
                 COUNT(DISTINCT responsavelid) AS total_participantes
-            FROM api_planoperativo {where}
+            FROM api_acaoprioritaria {where}
             """,
             params,
         )
@@ -133,15 +143,15 @@ def por_status(
         cur = conn.cursor()
         cur.execute(
             f"""
-            SELECT status, COUNT(*) AS total
-            FROM api_planoperativo {where}
-            GROUP BY status
+            SELECT status, status_cor, COUNT(*) AS total
+            FROM api_acaoprioritaria {where}
+            GROUP BY status, status_cor
             ORDER BY total DESC
             """,
             params,
         )
         rows = cur.fetchall()
-    return [{"status": r[0], "total": r[1]} for r in rows]
+    return [{"status": r[0], "cor": r[1], "total": r[2]} for r in rows]
 
 
 @app.get("/api/por-orgao")
@@ -159,7 +169,7 @@ def por_orgao(
         cur.execute(
             f"""
             SELECT agencyacronym, COUNT(*) AS total
-            FROM api_planoperativo {where}
+            FROM api_acaoprioritaria {where}
             GROUP BY agencyacronym
             ORDER BY total DESC
             LIMIT 20

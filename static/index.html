@@ -263,11 +263,6 @@ html, body {
 </div>
 
 <script>
-const SC = {
-  'A INICIAR':'#999','EM ANDAMENTO':'#2292B7','EM ATRASO':'#F8C200','ANDAMENTO':'#2292B7',
-  'EM ESTUDO':'#874B4B','CONCLUÍDO':'#1EAA59','PARALISADO':'#D01B1E',
-  'ATRASADO':'#E84C3D','NÃO PLANEJADO':'#964A00'
-};
 
 let chartBar = null, chartDonut = null;
 
@@ -351,7 +346,7 @@ async function loadDonut(qs) {
   const rows = await fetch('/api/por-status' + qs).then(r => r.json());
   const sL = rows.map(r => r.status);
   const sV = rows.map(r => r.total);
-  const sC = sL.map(k => SC[k] || '#aaa');
+  const sC = rows.map(r => r.cor || '#aaa');
   const tot = sV.reduce((a, b) => a + b, 0);
 
   // Legenda
