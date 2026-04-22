@@ -84,31 +84,6 @@ html, body {
 .kpi__body img { width: 34px; height: 34px; opacity: .85; }
 .kpi__val { font-size: 2.2rem; font-weight: 700; color: #044CB8; line-height: 1; }
 
-/* ════ BARRA AZUL — altura FIXA 44px ════ */
-.bar {
-  height: 44px; flex-shrink: 0;
-  background: #044CB8;
-  display: flex; align-items: center;
-  padding: 0 16px; gap: 10px; overflow: hidden;
-}
-.bar__lbl { color: #fff; font-size: .64rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; white-space: nowrap; }
-.bar__sep { width: 1px; height: 22px; background: rgba(255,255,255,.3); }
-.bar select {
-  height: 24px; background: rgba(255,255,255,.12);
-  border: 1px solid rgba(255,255,255,.4); border-radius: 3px;
-  color: #fff; font-size: .72rem; padding: 0 7px; outline: none; cursor: pointer;
-  min-width: 108px;
-}
-.bar select option { background: #044CB8; }
-.bar__btns { margin-left: auto; display: flex; gap: 7px; }
-.bar__btn {
-  height: 26px; padding: 0 14px; border-radius: 3px;
-  font-size: .72rem; font-weight: 700; cursor: pointer; border: none;
-}
-.bar__btn--w { background: #fff; color: #044CB8; }
-.bar__btn--w:hover { background: #e8f0fb; }
-.bar__btn--g { background: transparent; border: 1.5px solid rgba(255,255,255,.5); color: #fff; }
-.bar__btn--g:hover { background: rgba(255,255,255,.1); }
 
 /* ════ GRÁFICOS — ocupa o restante EXATO ════ */
 .charts {
@@ -255,23 +230,6 @@ html, body {
   </div>
 </div>
 
-<!-- ══ BARRA AZUL ══ -->
-<div class="bar">
-  <span class="bar__lbl">Status:</span>
-  <select onchange="syncSel('f-status',this.value)">
-    <option value="">Todos</option><option>A INICIAR</option><option>EM ANDAMENTO</option>
-    <option>EM ATRASO</option><option>CONCLUÍDO</option><option>PARALISADO</option><option>ATRASADO</option>
-  </select>
-  <div class="bar__sep"></div>
-  <span class="bar__lbl">Situação:</span>
-  <select onchange="syncSel('f-sit',this.value)">
-    <option value="">Todas</option><option>Dentro do Prazo</option><option>Fora do Prazo</option>
-  </select>
-  <div class="bar__btns">
-    <button class="bar__btn bar__btn--g" onclick="clearFilters()">Limpar</button>
-    <button class="bar__btn bar__btn--w" onclick="applyFilters()">Aplicar</button>
-  </div>
-</div>
 
 <!-- ══ GRÁFICOS ══ -->
 <div class="charts">
